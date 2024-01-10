@@ -8,8 +8,8 @@ DATA="gamedata"
 # Extract .trk files to the Tracks folder
 ./lib/7za e "$EXE" "*.trk" -o"$TRACKS"
 
-# Extract .ogg and .png files to the Assets folder
-./lib/7za e "$EXE" "*.ogg" "*.png" -o"$ASSETS"
+# Extract .ogg files to the Assets folder
+./lib/7za e "$EXE" "*.ogg" -o"$ASSETS"
 
 # Extract .win and .ini files to the Data folder
 ./lib/7za e -y "$EXE" "*.win" "*.ini" -o"$DATA"
