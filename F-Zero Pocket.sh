@@ -30,27 +30,18 @@ export GMLOADER_DEPTH_DISABLE=1
 export GMLOADER_SAVEDIR="$GAMEDIR/gamedata/"
 
 cd $GAMEDIR
-exec > >(tee -a "log.txt") 2>&1
 
 # Run the installer file if it hasn't been run yet
 if [ ! -f "$GAMEDIR/installed" ]; then
-  chmod +xw install.sh  # Ensure the script is executable
+  chmod +xw install.sh # Ensure the script is executable
   echo "Unpacking the game...please wait (might take a while!)" > /dev/tty0
-  ./install.sh
-  
-  # Check the exit status of the script
-  if [ $? -eq 0 ]; then
-    touch "$GAMEDIR/installed"
-	rm install.sh
-  else
-    echo "Error: The install.sh script encountered an error."
-  fi
+  ./install.sh 2>&1 | tee $GAMEDIR/install.txt
 fi
 
 # Make sure uinput is accessible so we can make use of the gptokeyb controls
 $ESUDO chmod 666 /dev/uinput
 
-$GPTOKEYB "gmloader" -c "controls.gptk" &
+$GPTOKEYB "gmloader" -c "control.gptk" &
 
 $ESUDO chmod +x "$GAMEDIR/gmloader"
 
