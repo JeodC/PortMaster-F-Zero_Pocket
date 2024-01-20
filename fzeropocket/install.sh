@@ -6,15 +6,15 @@ ASSETS="assets"
 DATA="gamedata"
 
 # Extract .trk files to the Tracks folder
-echo "Extracking tracks into $TRACKS..." > /dev/tty0
+echo "Extracting tracks into $TRACKS..." > /dev/tty0
 ./lib/7za e "$EXE" "*.trk" -o"$TRACKS"
 
 # Extract .ogg files to the Assets folder
-echo "Extracking music into $ASSETS..." > /dev/tty0
+echo "Extracting music into $ASSETS..." > /dev/tty0
 ./lib/7za e "$EXE" "*.ogg" -o"$ASSETS"
 
 # Extract .win and .ini files to the Data folder
-echo "Extracking data into $DATA..." > /dev/tty0
+echo "Extracting data into $DATA..." > /dev/tty0
 ./lib/7za e -y "$EXE" "*.win" "*.ini" -o"$DATA"
 
 # Rename data.win
