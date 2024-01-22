@@ -21,7 +21,7 @@ if [ "$OS_NAME" == "JELOS" ]; then
   export PIPEWIRE_MODULE_DIR="/usr/lib32/pipewire-0.3/"
 fi
 
-GAMEDIR="/$directory/ports/fzeropocket"
+GAMEDIR="/$directory/ports/f-zeropocket"
 
 # Port specific additional libraries should be included within the port's directory in a separate subfolder named libs.
 # Prioritize the armhf libs to avoid conflicts with aarch64
