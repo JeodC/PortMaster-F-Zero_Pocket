@@ -8,18 +8,11 @@ else
 fi
 
 source $controlfolder/control.txt
-
+source $controlfolder/device_info.txt
+[ -f "${controlfolder}/mod${CFWNAME}.txt" ] && source "${controlfolder}/mod${CFWNAME}.txt"
 get_controls
 
 $ESUDO chmod 666 /dev/tty0
-
-# We check on emuelec based CFWs the OS_NAME 
-[ -f "/etc/os-release" ] && source "/etc/os-release"
-
-if [ "$OS_NAME" == "JELOS" ]; then
-  export SPA_PLUGIN_DIR="/usr/lib32/spa-0.2"
-  export PIPEWIRE_MODULE_DIR="/usr/lib32/pipewire-0.3/"
-fi
 
 GAMEDIR="/$directory/ports/f-zeropocket"
 
@@ -32,8 +25,6 @@ export GMLOADER_SAVEDIR="$GAMEDIR/gamedata/"
 cd $GAMEDIR
 
 # Run the installer file if it hasn't been run yet
-set -e  # Exit on error
-set -x  # Enable debugging
 if [ ! -f "$GAMEDIR/installed" ]; then
 	EXE="./gamedata/FZero_Pocket.exe"
 	TRACKS="gamedata/Tracks"
