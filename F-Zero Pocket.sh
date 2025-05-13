@@ -13,70 +13,31 @@ else
 fi
 
 source $controlfolder/control.txt
-source $controlfolder/device_info.txt
-export PORT_32BIT="Y" # If using a 32 bit port
 [ -f "${controlfolder}/mod_${CFW_NAME}.txt" ] && source "${controlfolder}/mod_${CFW_NAME}.txt"
 get_controls
 
-$ESUDO chmod 666 /dev/tty0
-
+# Variables
 GAMEDIR="/$directory/ports/f-zeropocket"
 
-# Port specific additional libraries should be included within the port's directory in a separate subfolder named libs.
-# Prioritize the armhf libs to avoid conflicts with aarch64
-export LD_LIBRARY_PATH="/usr/lib32:$GAMEDIR/libs":$LD_LIBRARY_PATH
-export GMLOADER_DEPTH_DISABLE=1
-export GMLOADER_SAVEDIR="$GAMEDIR/gamedata/"
-
+# CD and set permissions
 cd $GAMEDIR
+> "$GAMEDIR/log.txt" && exec > >(tee "$GAMEDIR/log.txt") 2>&1
+chmod +x "$GAMEDIR/gmloadernext.aarch64"
 
-# Run the installer file if it hasn't been run yet
-if [ ! -f "$GAMEDIR/installed" ]; then
-	EXE="./gamedata/FZero_Pocket.exe"
-	TRACKS="gamedata/Tracks"
-	ASSETS="assets"
-	DATA="gamedata"
-	
-	# Redirect output to install.log only for the commands within the if condition
-	(
-		exec > >(tee -a "$GAMEDIR/install.log") 2>&1
+# Exports
+export LD_LIBRARY_PATH="$GAMEDIR/lib:$GAMEDIR/libs:$LD_LIBRARY_PATH"
+export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
 
-		# Extract .trk files to the Tracks folder
-		echo "Extracting tracks into $TRACKS..." > /dev/tty0
-		./libs/7za e "$EXE" "*.trk" -o"$TRACKS"
-
-		# Extract .ogg files to the Assets folder
-		echo "Extracting music into $ASSETS..." > /dev/tty0
-		./libs/7za e "$EXE" "*.ogg" -o"$ASSETS"
-
-		# Extract .win and .ini files to the Data folder
-		echo "Extracting data into $DATA..." > /dev/tty0
-		./libs/7za e -y "$EXE" "*.win" "*.ini" -o"$DATA"
-
-		# Rename data.win
-		mv "$DATA/data.win" "$DATA/game.droid"
-
-		# Create a new zip file game.apk from specified directories
-		echo "Zipping $ASSETS into apk..." > /dev/tty0
-		./libs/7za a -r "./game.apk" "./$ASSETS"
-
-		# Delete the executable file after extraction
-		rm "$EXE"
-	
-		# Create 'installed' file to indicate successful installation
-		touch "$GAMEDIR/installed"
-	)
+# Display loading splash
+if [ -f "$GAMEDIR/patchlog.txt" ]; then
+    [ "$CFW_NAME" == "muOS" ] && $ESUDO "$GAMEDIR/tools/splash" "$GAMEDIR/splash.png" 1
+    $ESUDO "$GAMEDIR/tools/splash" "$GAMEDIR/splash.png" 8000 & 
 fi
 
-# Make sure uinput is accessible so we can make use of the gptokeyb controls
-$ESUDO chmod 666 /dev/uinput
+# Assign gptokeyb and load the game
+$GPTOKEYB "gmloadernext.aarch64" -c "fzero.gptk" &
+pm_platform_helper "$GAMEDIR/gmloadernext.aarch64" >/dev/null
+./gmloadernext.aarch64 -c gmloader.json
 
-$GPTOKEYB "gmloader" -c "control.gptk" &
-
-$ESUDO chmod +x "$GAMEDIR/gmloader"
-
-./gmloader game.apk 2>&1 | tee $GAMEDIR/log.txt
-
-$ESUDO kill -9 $(pidof gptokeyb)
-$ESUDO systemctl restart oga_events &
-printf "\033c" > /dev/tty0
+# Cleanup
+pm_finish
